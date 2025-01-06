@@ -7,7 +7,6 @@ This project is a React application that utilizes Material-UI to allow users to 
 Ensure you have the following installed on your local machine:
 
 - [Node.js](https://nodejs.org/) (v14 or higher recommended)
-- [npm](https://www.npmjs.com/) (comes with Node.js) or [yarn](https://yarnpkg.com/)
 
 ## Getting Started
 
@@ -15,7 +14,7 @@ Ensure you have the following installed on your local machine:
 
    ```bash
    git clone <repository_url>
-   cd react-material-ui-app
+   cd 3-2-1
    ```
 
 2. **Install dependencies**
