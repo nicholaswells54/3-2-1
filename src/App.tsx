@@ -13,7 +13,7 @@ import {
   CssBaseline,
 } from '@mui/material';
 import Confetti from 'react-confetti';
-import { Theme } from '@mui/system';
+import { borders, Theme } from '@mui/system';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<number>(1);
@@ -90,7 +90,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="sm" style={{ marginTop: '2rem' }}>
+      <Container maxWidth="sm" style={{ marginTop: '2rem', position: 'relative', paddingBottom: '120px' }}>
         <Box display="flex" justifyContent="flex-end" marginBottom="1rem">
           <FormControlLabel
             control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
@@ -230,20 +230,53 @@ const App: React.FC = () => {
 
         {participants.length > 0 && (
           <>
-            <Typography variant="h5" align="center" gutterBottom>
-              Who's up?
-            </Typography>
-            <Typography variant="h4" align="center" gutterBottom>
-              {participants[currentIndex]}
-            </Typography>
-            <Button variant="outlined" color="secondary" onClick={handleParticipantChange}>
-              Next
-            </Button>
-            <Button variant="outlined" color="secondary" onClick={handleReset}>
-                Reset
-            </Button>
+            <Box
+              style={{
+                position: 'fixed',
+                bottom: '120px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                textAlign: 'center',
+                border: darkMode ? '2px solid white' : '2px solid black', // border based on dark mode
+                padding: '10px',
+                borderRadius: '8px',
+              }}
+            >
+              <Typography variant="h5" gutterBottom>
+                Who's up?
+              </Typography>
+              <Typography variant="h4" gutterBottom>
+                {participants[currentIndex]}
+              </Typography>
+            </Box>
           </>
         )}
+
+        {/* Fixed position buttons */}
+        <Box
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            display: 'flex',
+            gap: '10px',
+          }}
+        >
+          <Button variant="outlined" color="secondary" onClick={handleParticipantChange}>
+            Next Participant
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={handleReset}>
+            Reset
+          </Button>
+          {stage !== 1 && (
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Submit
+            </Button>
+          )}
+        </Box>
       </Container>
     </ThemeProvider>
   );
