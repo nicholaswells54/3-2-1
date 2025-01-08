@@ -28,6 +28,8 @@ const App: React.FC = () => {
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [dragging, setDragging] = useState(false); // Track dragging state
   const [dragPositions, setDragPositions] = useState<{ [key: number]: { x: number; y: number } }>({}); // Track positions of all cards
+  const [approved, setApproved] = useState<string[]>([]); // Track approved cards
+  const [rejected, setRejected] = useState<string[]>([]); // Track rejected cards
 
   const theme = createTheme({
     palette: {
@@ -92,12 +94,17 @@ const App: React.FC = () => {
     setFinalOption(null);
     setApprovedCount(0);
     setSwipedCards([]);
+    setApproved([]); // Reset approved list
+    setRejected([]); // Reset rejected list
   };
 
   const handleSwipe = (direction: string, option: string) => {
-    console.log('direction ', direction )
+    console.log('direction ', direction)
     if (direction === 'right') {
       setApprovedCount((prev) => prev + 1);
+      setApproved((prev) => [...prev, option]); // Add to approved list
+    } else if (direction === 'left') {
+      setRejected((prev) => [...prev, option]); // Add to rejected list
     }
 
     setSwipedCards((prev) => [...prev, option]);
@@ -105,7 +112,6 @@ const App: React.FC = () => {
     console.log('approved count: ', approvedCount + 1);
     if (approvedCount + 1 === 2) {
       setStage(4); // Move to stage 4 after 2 approved swipes
-
     }
   };
 
@@ -323,6 +329,45 @@ const App: React.FC = () => {
               </Typography>
             </Box>
           </>
+        )}
+
+        {/* Approved and Rejected lists side by side */}
+        {(stage === 4 || stage === 3) && (
+          <Box
+          display="flex"
+          justifyContent="space-between"
+          marginTop="2rem"
+        >
+          <Box
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="45%"
+            borderColor="grey.400"
+          >
+            <Typography variant="h6" gutterBottom>Approved</Typography>
+            <ul>
+              {approved.map((card, index) => (
+                <li key={index}>{card}</li>
+              ))}
+            </ul>
+          </Box>
+
+          <Box
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="45%"
+            borderColor="grey.400"
+          >
+            <Typography variant="h6" gutterBottom>Rejected</Typography>
+            <ul>
+              {rejected.map((card, index) => (
+                <li key={index}>{card}</li>
+              ))}
+            </ul>
+          </Box>
+        </Box>
         )}
 
         {/* Fixed position buttons */}
