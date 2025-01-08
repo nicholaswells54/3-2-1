@@ -4,16 +4,18 @@ import {
   TextField,
   Button,
   Typography,
-  Checkbox,
   FormControlLabel,
   Box,
   Switch,
   createTheme,
   ThemeProvider,
   CssBaseline,
+  Card,
+  CardContent,
 } from '@mui/material';
 import Confetti from 'react-confetti';
-import { borders, Theme } from '@mui/system';
+import { useSpring, animated } from 'react-spring';
+// import { Theme } from '@mui/system';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<number>(1);
@@ -23,6 +25,12 @@ const App: React.FC = () => {
   const [finalOption, setFinalOption] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [swipedCards, setSwipedCards] = useState<string[]>([]);
+  const [approvedCount, setApprovedCount] = useState<number>(0);
+  const [dragging, setDragging] = useState(false); // Track dragging state
+  const [dragPositions, setDragPositions] = useState<{ [key: number]: { x: number; y: number } }>({}); // Track positions of all cards
+
+  
 
   const theme = createTheme({
     palette: {
@@ -67,9 +75,9 @@ const App: React.FC = () => {
   const handleSubmit = (): void => {
     if (stage === 2 && options.every((option) => option.trim() !== "")) {
       setStage(3);
-    } else if (stage === 3 && selected.length === 2) {
+    } else if (stage === 3 && approvedCount === 2) {
       setStage(4);
-    } else if (stage === 4 && selected.length === 1) {
+    } else if (stage === 4 && approvedCount === 1) {
       setFinalOption(selected[0]);
       setStage(5);
     }
@@ -85,7 +93,95 @@ const App: React.FC = () => {
     setOptions(["", "", ""]);
     setSelected([]);
     setFinalOption(null);
+    setApprovedCount(0);
+    setSwipedCards([]);
   };
+
+  const handleSwipe = (direction: string, option: string) => {
+    if (direction === 'right') {
+      setApprovedCount((prev) => prev + 1);
+    }
+
+    setSwipedCards((prev) => [...prev, option]);
+
+    console.log('approved count: ', approvedCount);
+    if (approvedCount + 1 === 2) {
+      setStage(4); // Move to stage 4 after 2 approved swipes
+    }
+  };
+
+  const cardProps = (
+    option: string,
+    index: number,
+    dragPositions: { [key: number]: { x: number; y: number } },
+    setDragPositions: React.Dispatch<React.SetStateAction<{ [key: number]: { x: number; y: number } }>>,
+    dragging: boolean,
+    setDragging: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    const handleDragStart = (event: React.MouseEvent | React.TouchEvent) => {
+      console.log('drag start');
+      setDragging(true); // Start dragging
+      event.preventDefault(); // Prevent default behavior (e.g., text selection)
+    };
+
+    const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
+      if (!dragging) return;
+    
+      let x: number;
+      
+      // Determine the X coordinate based on the event type
+      if (event.type === "mousedown" || event.type === "mousemove") {
+        x = (event as React.MouseEvent).clientX;
+        console.log('Mouse event - x:', x); // Debugging the x value
+      } else if (event.type === "touchstart" || event.type === "touchmove") {
+        x = (event as React.TouchEvent).touches[0].clientX;
+        console.log('Touch event - x:', x); // Debugging the x value
+      } else {
+        console.log('No valid event type detected.'); // Debugging for unexpected cases
+        return;
+      }
+    
+      // Adjust the position to center it and avoid sudden jumps in the drag
+      setDragPositions((prevPositions) => ({
+        ...prevPositions,
+        [index]: { x: x - window.innerWidth / 2, y: 0 }, // Set the new position for the specific card
+      }));
+    };
+    
+
+    const handleDragEnd = () => {
+      console.log('drag end')
+      setDragging(false); // Stop dragging
+
+      if (dragPositions[index].x > 100) {
+        handleSwipe('right', option); // Swipe right
+      } else if (dragPositions[index].x < -100) {
+        handleSwipe('left', option); // Swipe left
+      } else {
+        setDragPositions((prevPositions) => ({
+        ...prevPositions,
+        [index]: { x: 0, y: 0 }, // Reset position of this card
+      }));
+      }
+    };
+
+    return {
+      onMouseDown: handleDragStart,
+      onTouchStart: handleDragStart,
+      onMouseMove: handleDrag,
+      onTouchMove: handleDrag,
+      onMouseUp: handleDragEnd,
+      onTouchEnd: handleDragEnd,
+      onMouseLeave: handleDragEnd,
+      style: {
+        transform: `translateX(${dragPositions[index]?.x || 0}px) rotate(${dragPositions[index]?.x / 10}deg)`,
+        opacity: dragging ? 1 : 0.7, // Adjust opacity when dragging
+        cursor: dragging ? 'grabbing' : 'grab',
+      },
+    };
+  };
+  
+  
 
   return (
     <ThemeProvider theme={theme}>
@@ -169,26 +265,26 @@ const App: React.FC = () => {
             <Typography variant="h6" align="center" gutterBottom>
               Select Two Options
             </Typography>
-            {options.map((option, index) => (
-              <FormControlLabel
-                key={index}
-                control={
-                  <Checkbox
-                    checked={selected.includes(option)}
-                    onChange={() => handleSelectionChange(option)}
-                  />
-                }
-                label={option}
-              />
-            ))}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={selected.length !== 2}
-            >
-              Submit Selection
-            </Button>
+            <Container>
+              <Box style={{ position: 'relative' }}>
+                {options.map((option, index) => {
+                  if (!swipedCards.includes(option)) {
+                    return (
+                      <animated.div key={index} {...cardProps(option, index, dragPositions, setDragPositions, dragging, setDragging)}>
+                        <Card style={{ marginBottom: '10px', position: 'absolute', width: '100%' }}>
+                          <CardContent>
+                            <Typography variant="h6" align="center">
+                              {option[0]}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </animated.div>
+                    );
+                  }
+                  return null;
+                })}
+              </Box>
+            </Container>
           </>
         )}
 
@@ -197,33 +293,8 @@ const App: React.FC = () => {
             <Typography variant="h6" align="center" gutterBottom>
               Select One Option
             </Typography>
-            {selected.map((option, index) => (
-              <FormControlLabel
-                key={index}
-                control={
-                  <Checkbox
-                    checked={selected.includes(option)}
-                    onChange={() => handleSelectionChange(option)}
-                  />
-                }
-                label={option}
-              />
-            ))}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={selected.length !== 1}
-            >
-              Submit Final Selection
-            </Button>
-          </>
-        )}
-
-        {stage === 5 && (
-          <>
             <Typography variant="h5" align="center" gutterBottom>
-              The final option is: {finalOption}!
+              {finalOption ? finalOption : 'Waiting for selection...'}
             </Typography>
           </>
         )}
@@ -238,7 +309,7 @@ const App: React.FC = () => {
                 transform: 'translateX(-50%)',
                 zIndex: 1000,
                 textAlign: 'center',
-                border: darkMode ? '2px solid white' : '2px solid black', // border based on dark mode
+                border: darkMode ? '2px solid white' : '2px solid black',
                 padding: '10px',
                 borderRadius: '8px',
               }}
@@ -271,11 +342,6 @@ const App: React.FC = () => {
           <Button variant="outlined" color="secondary" onClick={handleReset}>
             Reset
           </Button>
-          {stage !== 1 && (
-            <Button variant="contained" color="primary" onClick={handleSubmit}>
-              Submit
-            </Button>
-          )}
         </Box>
       </Container>
     </ThemeProvider>
@@ -283,4 +349,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
