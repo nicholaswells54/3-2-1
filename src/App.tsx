@@ -184,7 +184,7 @@ const App: React.FC = () => {
       },
     };
   };
-  
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -305,71 +305,6 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* Stage 5 */}
-        {participants.length > 0 && (
-          <>
-            <Box
-              style={{
-                position: 'fixed',
-                bottom: '120px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 1000,
-                textAlign: 'center',
-                border: darkMode ? '2px solid white' : '2px solid black',
-                padding: '10px',
-                borderRadius: '8px',
-              }}
-            >
-              <Typography variant="h5" gutterBottom>
-                Who's up?
-              </Typography>
-              <Typography variant="h4" gutterBottom>
-                {participants[currentIndex]}
-              </Typography>
-            </Box>
-          </>
-        )}
-
-        {/* Approved and Rejected lists side by side */}
-        {(stage === 4 || stage === 3) && (
-          <Box
-          display="flex"
-          justifyContent="space-between"
-          marginTop="2rem"
-        >
-          <Box
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="45%"
-            borderColor="grey.400"
-          >
-            <Typography variant="h6" gutterBottom>Approved</Typography>
-            <ul>
-              {approved.map((card, index) => (
-                <li key={index}>{card}</li>
-              ))}
-            </ul>
-          </Box>
-
-          <Box
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="45%"
-            borderColor="grey.400"
-          >
-            <Typography variant="h6" gutterBottom>Rejected</Typography>
-            <ul>
-              {rejected.map((card, index) => (
-                <li key={index}>{card}</li>
-              ))}
-            </ul>
-          </Box>
-        </Box>
-        )}
-
         {/* Fixed position buttons */}
         <Box
           style={{
@@ -390,6 +325,53 @@ const App: React.FC = () => {
           </Button>
         </Box>
       </Container>
+      {/* Approved and Rejected lists side by side */}
+      {(stage === 4 || stage === 3) && (
+        <Box display="flex" justifyContent="space-between" marginTop="2rem" style={{ width: '100%' }}>
+          <Box
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="33.33%" // Set to 1/3 of the screen width
+            height="100vh" // Make sure the box takes full height of the screen
+            borderColor="darkgreen"
+            bgcolor="rgba(0, 128, 0, 0.1)"
+            position="fixed" // Fix the box on the screen
+            right="0" // Align to the left edge of the screen
+            top="0" // Align to the top of the screen
+            zIndex={1} // Ensure it appears on top of other elements if needed
+          >
+            <Typography variant="h6" gutterBottom color="darkgreen">Approved</Typography>
+            <ul>
+              {approved.map((card, index) => (
+                <li key={index}>{card}</li>
+              ))}
+            </ul>
+          </Box>
+
+          <Box
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="33.33%" // Set to 1/3 of the screen width
+            height="100vh" // Make sure the box takes full height of the screen
+            borderColor="darkred"
+            bgcolor="rgba(139, 0, 0, 0.1)"
+            position="fixed" // Fix the box on the screen
+            left="0" // Align to the right edge of the screen
+            top="0" // Align to the top of the screen
+            zIndex={1} // Ensure it appears on top of other elements if needed
+          >
+            <Typography variant="h6" gutterBottom color="darkred">Rejected</Typography>
+            <ul>
+              {rejected.map((card, index) => (
+                <li key={index}>{card}</li>
+              ))}
+            </ul>
+          </Box>
+        </Box>
+      )}
+
     </ThemeProvider>
   );
 };
