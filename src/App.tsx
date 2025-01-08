@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import Confetti from 'react-confetti';
 import { useSpring, animated } from 'react-spring';
-// import { Theme } from '@mui/system';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<number>(1);
@@ -29,8 +28,6 @@ const App: React.FC = () => {
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [dragging, setDragging] = useState(false); // Track dragging state
   const [dragPositions, setDragPositions] = useState<{ [key: number]: { x: number; y: number } }>({}); // Track positions of all cards
-
-  
 
   const theme = createTheme({
     palette: {
@@ -98,15 +95,17 @@ const App: React.FC = () => {
   };
 
   const handleSwipe = (direction: string, option: string) => {
+    console.log('direction ', direction )
     if (direction === 'right') {
       setApprovedCount((prev) => prev + 1);
     }
 
     setSwipedCards((prev) => [...prev, option]);
 
-    console.log('approved count: ', approvedCount);
+    console.log('approved count: ', approvedCount + 1);
     if (approvedCount + 1 === 2) {
       setStage(4); // Move to stage 4 after 2 approved swipes
+
     }
   };
 
@@ -126,21 +125,19 @@ const App: React.FC = () => {
 
     const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
       if (!dragging) return;
-    
+
       let x: number;
-      
+
       // Determine the X coordinate based on the event type
       if (event.type === "mousedown" || event.type === "mousemove") {
         x = (event as React.MouseEvent).clientX;
-        console.log('Mouse event - x:', x); // Debugging the x value
       } else if (event.type === "touchstart" || event.type === "touchmove") {
         x = (event as React.TouchEvent).touches[0].clientX;
-        console.log('Touch event - x:', x); // Debugging the x value
       } else {
         console.log('No valid event type detected.'); // Debugging for unexpected cases
         return;
       }
-    
+
       // Adjust the position to center it and avoid sudden jumps in the drag
       setDragPositions((prevPositions) => ({
         ...prevPositions,
@@ -148,22 +145,23 @@ const App: React.FC = () => {
       }));
     };
     
-
     const handleDragEnd = () => {
-      console.log('drag end')
-      setDragging(false); // Stop dragging
-
-      if (dragPositions[index].x > 100) {
+      console.log('drag end', dragPositions[index].x)
+    
+      if (dragPositions[index].x > 400) {
         handleSwipe('right', option); // Swipe right
-      } else if (dragPositions[index].x < -100) {
+      } else if (dragPositions[index].x < -400) {
         handleSwipe('left', option); // Swipe left
       } else {
+        setDragging(false); // Stop dragging
+        // Reset position of the card to the center if not swiped
         setDragPositions((prevPositions) => ({
-        ...prevPositions,
-        [index]: { x: 0, y: 0 }, // Reset position of this card
-      }));
+          ...prevPositions,
+          [index]: { x: 0, y: 0 }, // Reset position to center (x: 0)
+        }));
       }
     };
+    
 
     return {
       onMouseDown: handleDragStart,
@@ -175,14 +173,12 @@ const App: React.FC = () => {
       onMouseLeave: handleDragEnd,
       style: {
         transform: `translateX(${dragPositions[index]?.x || 0}px) rotate(${dragPositions[index]?.x / 10}deg)`,
-        opacity: dragging ? 1 : 0.7, // Adjust opacity when dragging
+        opacity:1 ,
         cursor: dragging ? 'grabbing' : 'grab',
       },
     };
   };
   
-  
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -194,12 +190,13 @@ const App: React.FC = () => {
           />
         </Box>
 
-        {stage === 5 && <Confetti />} {/* Show confetti when the final option is displayed */}
+        {stage === 5 && <Confetti />}
 
         <Typography variant="h4" align="center" gutterBottom>
           Let's Play 3-2-1!
         </Typography>
 
+        {/* Stage 1 - Participants */}
         {stage === 1 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -232,6 +229,7 @@ const App: React.FC = () => {
           </>
         )}
 
+        {/* Stage 2 - Options */}
         {stage === 2 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -260,6 +258,7 @@ const App: React.FC = () => {
           </>
         )}
 
+        {/* Stage 3 - Drag cards */}
         {stage === 3 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -288,6 +287,7 @@ const App: React.FC = () => {
           </>
         )}
 
+        {/* Stage 4 - Select one option */}
         {stage === 4 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -299,6 +299,7 @@ const App: React.FC = () => {
           </>
         )}
 
+        {/* Stage 5 */}
         {participants.length > 0 && (
           <>
             <Box
