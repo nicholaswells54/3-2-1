@@ -27,7 +27,7 @@ const App: React.FC = () => {
   const [swipedCards, setSwipedCards] = useState<string[]>([]);
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [dragging, setDragging] = useState(false); // Track dragging state
-  const [dragPositions, setDragPositions] = useState<{ [key: number]: { x: number; y: number } }>({}); // Track positions of all cards
+  const [dragPositions, setDragPositions] = useState<{ [key: number]: { x: number; y: number; isOverList: string | null } }>({}); // Track positions of all cards
   const [approved, setApproved] = useState<string[]>([]); // Track approved cards
   const [rejected, setRejected] = useState<string[]>([]); // Track rejected cards
 
@@ -110,13 +110,12 @@ const App: React.FC = () => {
   const cardProps = (
     option: string,
     index: number,
-    dragPositions: { [key: number]: { x: number; y: number } },
-    setDragPositions: React.Dispatch<React.SetStateAction<{ [key: number]: { x: number; y: number } }>>,
+    dragPositions: { [key: number]: { x: number; y: number; isOverList: string | null } },
+    setDragPositions: React.Dispatch<React.SetStateAction<{ [key: number]: { x: number; y: number; isOverList: string | null } }>>,
     dragging: boolean,
     setDragging: React.Dispatch<React.SetStateAction<boolean>>,
   ) => {
     const handleDragStart = (event: React.MouseEvent | React.TouchEvent) => {
-      console.log('drag start');
       setDragging(true); // Start dragging
       event.preventDefault(); // Prevent default behavior (e.g., text selection)
     };
@@ -135,34 +134,33 @@ const App: React.FC = () => {
         x = (event as React.TouchEvent).touches[0].clientX;
         y = (event as React.TouchEvent).touches[0].clientY;
       } else {
-        console.log('No valid event type detected.'); // Debugging for unexpected cases
         return;
       }
 
-      // Adjust the position to center it and avoid sudden jumps in the drag
+      // Determine if the card is over a list
+      const isOverList = (x < window.innerWidth / 2) ? 'left' : (x > window.innerWidth / 2) ? 'right' : null;
+
       setDragPositions((prevPositions) => ({
         ...prevPositions,
-        [index]: { x: x - window.innerWidth / 2, y: 0 }, // Set the new position for the specific card
+        [index]: { x: x - window.innerWidth / 2, y: y, isOverList },
       }));
     };
-    
+
     const handleDragEnd = () => {
-      console.log('drag end', dragPositions[index].x)
-    
-      if (dragPositions[index].x > 200) {
-        handleSwipe('right', option); // Swipe right
-      } else if (dragPositions[index].x < -200) {
-        handleSwipe('left', option); // Swipe left
+      const currentDragPosition = dragPositions[index];
+
+      if (currentDragPosition.isOverList === 'right') {
+        handleSwipe('right', option); // Swipe right (Approved)
+      } else if (currentDragPosition.isOverList === 'left') {
+        handleSwipe('left', option); // Swipe left (Rejected)
       } else {
         setDragging(false); // Stop dragging
-        // Reset position of the card to the center if not swiped
         setDragPositions((prevPositions) => ({
           ...prevPositions,
-          [index]: { x: 0, y: 0 }, // Reset position to center (x: 0)
+          [index]: { x: 0, y: 0, isOverList: null }, // Reset position and list tracking
         }));
       }
     };
-    
 
     return {
       onMouseDown: handleDragStart,
@@ -174,7 +172,7 @@ const App: React.FC = () => {
       onMouseLeave: handleDragEnd,
       style: {
         transform: `translateX(${dragPositions[index]?.x || 0}px) rotate(${dragPositions[index]?.x / 10}deg)`,
-        opacity:1 ,
+        opacity: 1,
         cursor: dragging ? 'grabbing' : 'grab',
       },
     };
