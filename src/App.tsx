@@ -14,7 +14,7 @@ import {
   CardContent,
 } from '@mui/material';
 import Confetti from 'react-confetti';
-import { useSpring, animated } from 'react-spring';
+import { animated } from 'react-spring';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<number>(1);
@@ -352,14 +352,14 @@ const App: React.FC = () => {
             borderRadius="8px"
             width="33.33%" // Set to 1/3 of the screen width
             height="100vh" // Make sure the box takes full height of the screen
-            borderColor="darkgreen"
-            bgcolor="rgba(0, 128, 0, 0.1)"
+            borderColor={darkMode ? "lightgreen" : "darkgreen"}
+            bgcolor={darkMode ? "rgba(144, 238, 144, 0.2)" : "rgba(0, 128, 0, 0.1)"} // Light green for dark mode
             position="fixed" // Fix the box on the screen
             right="0" // Align to the left edge of the screen
             top="0" // Align to the top of the screen
             zIndex={1} // Ensure it appears on top of other elements if needed
           >
-            <Typography variant="h6" gutterBottom color="darkgreen">Approved</Typography>
+            <Typography variant="h6" gutterBottom color={darkMode ? "lightgreen" : "darkgreen"}>Approved</Typography>
             <ul>
               {approved.map((card, index) => (
                 <li key={index}>{card}</li>
@@ -373,14 +373,14 @@ const App: React.FC = () => {
             borderRadius="8px"
             width="33.33%" // Set to 1/3 of the screen width
             height="100vh" // Make sure the box takes full height of the screen
-            borderColor="darkred"
-            bgcolor="rgba(139, 0, 0, 0.1)"
+            borderColor={darkMode ? "lightcoral" : "darkred"}
+            bgcolor={darkMode ? "rgba(255, 99, 71, 0.2)" : "rgba(139, 0, 0, 0.1)"} // Light red for dark mode
             position="fixed" // Fix the box on the screen
             left="0" // Align to the right edge of the screen
             top="0" // Align to the top of the screen
             zIndex={1} // Ensure it appears on top of other elements if needed
           >
-            <Typography variant="h6" gutterBottom color="darkred">Rejected</Typography>
+            <Typography variant="h6" gutterBottom color={darkMode ? "lightcoral" : "darkred"}>Rejected</Typography>
             <ul>
               {rejected.map((card, index) => (
                 <li key={index}>{card}</li>
