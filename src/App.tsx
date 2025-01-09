@@ -119,14 +119,14 @@ const App: React.FC = () => {
       setDragging(true); // Start dragging
       event.preventDefault(); // Prevent default behavior (e.g., text selection)
     };
-
+  
     const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
       if (!dragging) return;
-
+  
       let x: number;
       let y: number;
-
-      // Determine the X, Y coordinate based on the event type
+  
+      // Determine the X, Y coordinates based on the event type
       if (event.type === "mousedown" || event.type === "mousemove") {
         x = (event as React.MouseEvent).clientX;
         y = (event as React.MouseEvent).clientY;
@@ -136,25 +136,25 @@ const App: React.FC = () => {
       } else {
         return;
       }
-
-      // Determine if the card is over a list
+  
+      // Determine if the card is over a list (left or right)
       const isOverList = (x < window.innerWidth / 2) ? 'left' : (x > window.innerWidth / 2) ? 'right' : null;
-
+  
       setDragPositions((prevPositions) => ({
         ...prevPositions,
-        [index]: { x: x - window.innerWidth / 2, y: y, isOverList },
+        [index]: { x: x - window.innerWidth / 2, y: y - window.innerHeight / 2, isOverList }, // Adjust Y by subtracting screen height
       }));
     };
-
+  
     const handleDragEnd = () => {
+      setDragging(false); // Stop dragging
       const currentDragPosition = dragPositions[index];
-
-      if (currentDragPosition.isOverList === 'right') {
+  
+      if (currentDragPosition?.isOverList === 'right') {
         handleSwipe('right', option); // Swipe right (Approved)
-      } else if (currentDragPosition.isOverList === 'left') {
+      } else if (currentDragPosition?.isOverList === 'left') {
         handleSwipe('left', option); // Swipe left (Rejected)
       } else {
-        setDragging(false); // Stop dragging
         setDragPositions((prevPositions) => ({
           ...prevPositions,
           [index]: { x: 0, y: 0, isOverList: null }, // Reset position and list tracking
@@ -162,14 +162,16 @@ const App: React.FC = () => {
       }
     };
 
+    console.log('dragging? ', dragging)
+  
     return {
       onMouseDown: handleDragStart,
       onTouchStart: handleDragStart,
       onMouseMove: handleDrag,
       onTouchMove: handleDrag,
       onMouseUp: handleDragEnd,
-      onTouchEnd: handleDragEnd,
-      onMouseLeave: handleDragEnd,
+      // onTouchEnd: handleDragEnd,
+      // onMouseLeave: handleDragEnd,
       style: {
         transform: `translateX(${dragPositions[index]?.x || 0}px) rotate(${dragPositions[index]?.x / 10}deg)`,
         opacity: 1,
