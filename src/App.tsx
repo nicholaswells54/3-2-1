@@ -63,14 +63,6 @@ const App: React.FC = () => {
     setOptions(newOptions);
   };
 
-  const handleSelectionChange = (option: string): void => {
-    if (selected.includes(option)) {
-      setSelected(selected.filter((item) => item !== option));
-    } else if (selected.length < 2 || stage === 3) {
-      setSelected([...selected, option]);
-    }
-  };
-
   const handleSubmit = (): void => {
     if (stage === 2 && options.every((option) => option.trim() !== "")) {
       setStage(3);
@@ -133,12 +125,15 @@ const App: React.FC = () => {
       if (!dragging) return;
 
       let x: number;
+      let y: number;
 
-      // Determine the X coordinate based on the event type
+      // Determine the X, Y coordinate based on the event type
       if (event.type === "mousedown" || event.type === "mousemove") {
         x = (event as React.MouseEvent).clientX;
+        y = (event as React.MouseEvent).clientY;
       } else if (event.type === "touchstart" || event.type === "touchmove") {
         x = (event as React.TouchEvent).touches[0].clientX;
+        y = (event as React.TouchEvent).touches[0].clientY;
       } else {
         console.log('No valid event type detected.'); // Debugging for unexpected cases
         return;
@@ -154,9 +149,9 @@ const App: React.FC = () => {
     const handleDragEnd = () => {
       console.log('drag end', dragPositions[index].x)
     
-      if (dragPositions[index].x > 400) {
+      if (dragPositions[index].x > 200) {
         handleSwipe('right', option); // Swipe right
-      } else if (dragPositions[index].x < -400) {
+      } else if (dragPositions[index].x < -200) {
         handleSwipe('left', option); // Swipe left
       } else {
         setDragging(false); // Stop dragging
@@ -302,6 +297,31 @@ const App: React.FC = () => {
             <Typography variant="h5" align="center" gutterBottom>
               {finalOption ? finalOption : 'Waiting for selection...'}
             </Typography>
+          </>
+        )}
+
+        {participants.length > 0 && (
+          <>
+            <Box
+              style={{
+                position: 'fixed',
+                bottom: '120px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                textAlign: 'center',
+                border: darkMode ? '2px solid white' : '2px solid black',
+                padding: '10px',
+                borderRadius: '8px',
+              }}
+            >
+              <Typography variant="h5" gutterBottom>
+                Who's up?
+              </Typography>
+              <Typography variant="h4" gutterBottom>
+                {participants[currentIndex]}
+              </Typography>
+            </Box>
           </>
         )}
 
