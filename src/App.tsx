@@ -167,7 +167,7 @@ const App: React.FC = () => {
         {stage === 3 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
-              Approve two selections by dragging option to the right of the screen
+              Approve two selections by dragging an option to the right of the screen.
             </Typography>
             <Box display="flex" justifyContent="center" marginTop="2rem">
               <div
@@ -213,74 +213,81 @@ const App: React.FC = () => {
 
         {/* Drop zones for Approved and Rejected lists */}
         {(stage === 3 || stage === 4) && (
-        // Approved List
-        <Box display="flex" justifyContent="space-between" marginTop="2rem">
-          <Box
-            onDrop={(e) => {
-              e.preventDefault();
-              const draggedOption = e.dataTransfer.getData("text");
-              setApproved((prev) => [...prev, draggedOption]);
-              setOptions((prev) => {
-                const newOptions = prev.filter((option) => option !== draggedOption);
-                return [...newOptions, draggedOption];
-              });
-              setApprovedCount(approvedCount + 1);
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="33.33%" // Set to 1/3 of the screen width
-            height="100vh" // Make sure the box takes full height of the screen
-            borderColor={darkMode ? "lightgreen" : "darkgreen"}
-            bgcolor={darkMode ? "rgba(144, 238, 144, 0.2)" : "rgba(0, 128, 0, 0.1)"} // Light green for dark mode
-            position="fixed" // Fix the box on the screen
-            right="0" // Align to the left edge of the screen
-            top="0" // Align to the top of the screen
-          >
-            <Typography variant="h6" gutterBottom>
-              Approved
-            </Typography>
-            <ul>
-              {approved.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+          <Box display="flex" justifyContent="space-between" marginTop="2rem">
+            {/* Approved List */}
+            <Box
+              onDrop={(e) => {
+                e.preventDefault();
+                const draggedOption = e.dataTransfer.getData("text");
+                if (!approved.includes(draggedOption)) {
+                  setApproved((prev) => [...prev, draggedOption]);
+                  setApprovedCount((prev) => {
+                    const newCount = prev + 1;
+                    if (stage === 3 && newCount === 2) {
+                      setStage(4); // Move to stage 4 after two approvals
+                    }
+                    return newCount;
+                  });
+                }
+                setOptions((prev) =>
+                  prev.filter((option) => option !== draggedOption)
+                );
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              border={1}
+              padding="1rem"
+              borderRadius="8px"
+              width="33.33%"
+              height="100vh"
+              borderColor={darkMode ? "lightgreen" : "darkgreen"}
+              bgcolor={darkMode ? "rgba(144, 238, 144, 0.2)" : "rgba(0, 128, 0, 0.1)"}
+              position="fixed"
+              right="0"
+              top="0"
+            >
+              <Typography variant="h6" gutterBottom>
+                Approved
+              </Typography>
+              <ul>
+                {approved.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </Box>
+            {/* Rejected List */}
+            <Box
+              onDrop={(e) => {
+                e.preventDefault();
+                const draggedOption = e.dataTransfer.getData("text");
+                if (!rejected.includes(draggedOption)) {
+                  setRejected((prev) => [...prev, draggedOption]);
+                }
+                setOptions((prev) =>
+                  prev.filter((option) => option !== draggedOption)
+                );
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              border={1}
+              padding="1rem"
+              borderRadius="8px"
+              width="33.33%"
+              height="100vh"
+              borderColor={darkMode ? "lightcoral" : "darkred"}
+              bgcolor={darkMode ? "rgba(255, 99, 71, 0.2)" : "rgba(139, 0, 0, 0.1)"}
+              position="fixed"
+              left="0"
+              top="0"
+            >
+              <Typography variant="h6" gutterBottom>
+                Rejected
+              </Typography>
+              <ul>
+                {rejected.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </Box>
           </Box>
-
-          {/* Rejected List */}
-          <Box
-            onDrop={(e) => {
-              e.preventDefault();
-              const draggedOption = e.dataTransfer.getData("text");
-              setRejected((prev) => [...prev, draggedOption]);
-              setOptions((prev) => {
-                const newOptions = prev.filter((option) => option !== draggedOption);
-                return [...newOptions, draggedOption];
-              });
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="33.33%" // Set to 1/3 of the screen width
-            height="100vh" // Make sure the box takes full height of the screen
-            borderColor={darkMode ? "lightcoral" : "darkred"}
-            bgcolor={darkMode ? "rgba(255, 99, 71, 0.2)" : "rgba(139, 0, 0, 0.1)"} // Light red for dark mode
-            position="fixed" // Fix the box on the screen
-            left="0" // Align to the right edge of the screen
-            top="0" // Align to the top of the screen
-          >
-            <Typography variant="h6" gutterBottom>
-              Rejected
-            </Typography>
-            <ul>
-              {rejected.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </Box>
-        </Box>
         )}
 
         {participants.length > 0 && (
