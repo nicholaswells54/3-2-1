@@ -10,6 +10,7 @@ import {
   createTheme,
   ThemeProvider,
   CssBaseline,
+  Modal
 } from '@mui/material';
 import Confetti from 'react-confetti';
 
@@ -95,7 +96,51 @@ const App: React.FC = () => {
           />
         </Box>
 
-        {stage === 5 && <Confetti />}
+        {stage === 5 && (
+          <Modal
+            open={true}
+            onClose={() => {}}
+            aria-labelledby="final-selection-title"
+            aria-describedby="final-selection-description"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Box
+              style={{
+                backgroundColor: darkMode ? '#444' : '#fff',
+                color: darkMode ? '#fff' : '#000',
+                padding: '2rem',
+                borderRadius: '8px',
+                textAlign: 'center',
+                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+              }}
+            >
+              <Confetti/>
+              <Typography id="final-selection-title" variant="h4" gutterBottom>
+                Final Selection
+              </Typography>
+              <Typography
+                id="final-selection-description"
+                variant="h5"
+                style={{ fontWeight: 'bold' }}
+              >
+                {finalOption}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleReset}
+                style={{ marginTop: '1rem' }}
+              >
+                Reset
+              </Button>
+            </Box>
+          </Modal>
+        )}
+
 
         <Typography variant="h4" align="center" gutterBottom>
           Let's Play 3-2-1!
