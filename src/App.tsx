@@ -117,31 +117,10 @@ const App: React.FC = () => {
     transform: stage === 5 ? 'translateY(0)' : 'translateY(50%)',
   });
 
-  const stageChangeTransition = useSpring({
-    opacity: showStageChange ? 1 : 0,
-    transform: showStageChange ? 'translateY(0)' : 'translateY(-50%)',
-    config: { duration: 2000 }
-  });
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="sm" style={{ marginTop: '2rem', position: 'relative', paddingBottom: '120px' }}>
-        {/* Stage Change Message */}
-        <animated.div
-          style={{
-            ...stageChangeTransition,
-            position: 'fixed',
-            top: '40%', // Moved up a couple inches from the center
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-          }}
-        >
-          <Typography variant="h3" color={darkMode ? 'white' : 'black'}>
-            Stage Change
-          </Typography>
-        </animated.div>
 
         <Box display="flex" justifyContent="flex-end" marginBottom="1rem">
           <FormControlLabel
@@ -314,6 +293,7 @@ const App: React.FC = () => {
           )}
         </animated.div>
 
+
         {/* Final Selection */}
         <animated.div style={finalSelectionTransition}>
           {stage === 5 && (
@@ -357,7 +337,6 @@ const App: React.FC = () => {
           )}
         </animated.div>
 
-
         {/* Drop zones for Approved and Rejected lists */}
         {(stage === 3 || stage === 4) && (
           <Box display="flex" justifyContent="space-between" marginTop="2rem">
@@ -374,8 +353,8 @@ const App: React.FC = () => {
                     if (stage === 3 && newCount === 2) {
                       setStage(4);
                       setOptions([...approved, draggedOption]);
-                      setApproved([]);
-                      setRejected([]);
+                      setApproved([]); 
+                      setRejected([]); 
                       return 0;
                     }
 
