@@ -26,7 +26,6 @@ const App: React.FC = () => {
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [approved, setApproved] = useState<string[]>([]); // Track approved cards
   const [rejected, setRejected] = useState<string[]>([]); // Track rejected cards
-  const [showStageChange, setShowStageChange] = useState(false);
 
   const theme = createTheme({
     palette: {
@@ -43,16 +42,6 @@ const App: React.FC = () => {
       },
     },
   });
-
-  // Show the "Stage Change" message whenever the stage changes
-  useEffect(() => {
-    setShowStageChange(true);
-    const timer = setTimeout(() => {
-      setShowStageChange(false);
-    }, 2000); // Hide the message after 2 seconds
-
-    return () => clearTimeout(timer);
-  }, [stage]);
 
   const handleParticipantsSubmit = (input: string): void => {
     const participantList = input
