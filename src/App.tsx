@@ -99,17 +99,17 @@ const App: React.FC = () => {
   // Define transition animations
   const stageTransition = useSpring({
     opacity: stage === 1 ? 1 : 0,
-    transform: stage === 1 ? 'translateX(0)' : 'translateX(100%)',
+    transform: stage === 1 ? 'translateY(0)' : 'translateY(100%)',
   });
 
   const optionsTransition = useSpring({
     opacity: stage === 2 ? 1 : 0,
-    transform: stage === 2 ? 'translateX(0)' : 'translateX(100%)',
+    transform: stage === 2 ? 'translateY(0)' : 'translateY(100%)',
   });
 
   const draggableTransition = useSpring({
     opacity: stage === 3 || stage === 4 ? 1 : 0,
-    transform: stage === 3 || stage === 4 ? 'translateX(0)' : 'translateX(100%)',
+    transform: stage === 3 || stage === 4 ? 'translateY(0)' : 'translateY(100%)',
   });
 
   const finalSelectionTransition = useSpring({
@@ -128,8 +128,17 @@ const App: React.FC = () => {
       <CssBaseline />
       <Container maxWidth="sm" style={{ marginTop: '2rem', position: 'relative', paddingBottom: '120px' }}>
         {/* Stage Change Message */}
-        <animated.div style={{ ...stageChangeTransition, position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}>
-          <Typography variant="h3" color="primary">
+        <animated.div
+          style={{
+            ...stageChangeTransition,
+            position: 'fixed',
+            top: '40%', // Moved up a couple inches from the center
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+          }}
+        >
+          <Typography variant="h3" color={darkMode ? 'white' : 'black'}>
             Stage Change
           </Typography>
         </animated.div>
