@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   TextField,
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [approved, setApproved] = useState<string[]>([]); // Track approved cards
   const [rejected, setRejected] = useState<string[]>([]); // Track rejected cards
+  const [showStageChange, setShowStageChange] = useState(false);
 
   const theme = createTheme({
     palette: {
@@ -42,6 +43,16 @@ const App: React.FC = () => {
       },
     },
   });
+
+  // Show the "Stage Change" message whenever the stage changes
+  useEffect(() => {
+    setShowStageChange(true);
+    const timer = setTimeout(() => {
+      setShowStageChange(false);
+    }, 2000); // Hide the message after 2 seconds
+
+    return () => clearTimeout(timer);
+  }, [stage]);
 
   const handleParticipantsSubmit = (input: string): void => {
     const participantList = input
@@ -106,10 +117,23 @@ const App: React.FC = () => {
     transform: stage === 5 ? 'translateY(0)' : 'translateY(50%)',
   });
 
+  const stageChangeTransition = useSpring({
+    opacity: showStageChange ? 1 : 0,
+    transform: showStageChange ? 'translateY(0)' : 'translateY(-50%)',
+    config: { duration: 2000 }
+  });
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="sm" style={{ marginTop: '2rem', position: 'relative', paddingBottom: '120px' }}>
+        {/* Stage Change Message */}
+        <animated.div style={{ ...stageChangeTransition, position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}>
+          <Typography variant="h3" color="primary">
+            Stage Change
+          </Typography>
+        </animated.div>
+
         <Box display="flex" justifyContent="flex-end" marginBottom="1rem">
           <FormControlLabel
             control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
