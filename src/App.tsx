@@ -245,7 +245,12 @@ const App: React.FC = () => {
                     borderRadius: "8px",
                     cursor: "grab",
                     backgroundColor: darkMode ? "#444" : "#ddd",
-                    width: '100%',
+                    width: '175px', // Playing card width
+                    height: '245px', // Playing card height
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
                   }}
                 >
                   {options[0]}
@@ -272,7 +277,12 @@ const App: React.FC = () => {
                     borderRadius: "8px",
                     cursor: "grab",
                     backgroundColor: darkMode ? "#444" : "#ddd",
-                    width: '100%',
+                    width: '175px', // Playing card width
+                    height: '245px', // Playing card height
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
                   }}
                 >
                   {options[0]}
@@ -342,8 +352,8 @@ const App: React.FC = () => {
                     if (stage === 3 && newCount === 2) {
                       setStage(4);
                       setOptions([...approved, draggedOption]);
-                      setApproved([]); 
-                      setRejected([]); 
+                      setApproved([]);
+                      setRejected([]);
                       return 0;
                     }
 
@@ -373,11 +383,24 @@ const App: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 Approved
               </Typography>
-              <ul>
+              <Box display="flex" flexDirection="column" alignItems="center">
                 {approved.map((item, index) => (
-                  <li key={index}>{item}</li>
+                  <Box
+                    key={index}
+                    style={{
+                      border: '2px solid',
+                      borderRadius: '12px',  // Rounded corners
+                      padding: '10px',
+                      marginBottom: '10px',
+                      width: '80%',
+                      textAlign: 'center',
+                      backgroundColor: darkMode ? '#444' : '#ddd',
+                    }}
+                  >
+                    <Typography variant="body1">{item}</Typography>
+                  </Box>
                 ))}
-              </ul>
+              </Box>
             </Box>
 
             {/* Rejected List */}
@@ -408,14 +431,28 @@ const App: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 Rejected
               </Typography>
-              <ul>
+              <Box display="flex" flexDirection="column" alignItems="center">
                 {rejected.map((item, index) => (
-                  <li key={index}>{item}</li>
+                  <Box
+                    key={index}
+                    style={{
+                      border: '2px solid',
+                      borderRadius: '12px',  // Rounded corners
+                      padding: '10px',
+                      marginBottom: '10px',
+                      width: '80%',
+                      textAlign: 'center',
+                      backgroundColor: darkMode ? '#444' : '#ddd',
+                    }}
+                  >
+                    <Typography variant="body1">{item}</Typography>
+                  </Box>
                 ))}
-              </ul>
+              </Box>
             </Box>
           </Box>
         )}
+
 
         {participants.length > 0 && (
           <>
