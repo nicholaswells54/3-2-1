@@ -13,6 +13,7 @@ import {
   Modal
 } from '@mui/material';
 import Confetti from 'react-confetti';
+import { useSpring, animated } from '@react-spring/web';
 
 const App: React.FC = () => {
   const [stage, setStage] = useState<number>(1);
@@ -84,6 +85,26 @@ const App: React.FC = () => {
     setRejected([]); // Reset rejected list
   };
 
+  // Define transition animations
+  const stageTransition = useSpring({
+    opacity: stage === 1 ? 1 : 0,
+    transform: stage === 1 ? 'translateX(0)' : 'translateX(100%)',
+  });
+
+  const optionsTransition = useSpring({
+    opacity: stage === 2 ? 1 : 0,
+    transform: stage === 2 ? 'translateX(0)' : 'translateX(100%)',
+  });
+
+  const draggableTransition = useSpring({
+    opacity: stage === 3 || stage === 4 ? 1 : 0,
+    transform: stage === 3 || stage === 4 ? 'translateX(0)' : 'translateX(100%)',
+  });
+
+  const finalSelectionTransition = useSpring({
+    opacity: stage === 5 ? 1 : 0,
+    transform: stage === 5 ? 'translateY(0)' : 'translateY(50%)',
+  });
 
   return (
     <ThemeProvider theme={theme}>
@@ -118,7 +139,7 @@ const App: React.FC = () => {
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
               }}
             >
-              <Confetti/>
+              <Confetti />
               <Typography id="final-selection-title" variant="h4" gutterBottom>
                 Final Selection
               </Typography>
@@ -141,116 +162,168 @@ const App: React.FC = () => {
         </Typography>
 
         {/* Stage 1 - Participants */}
-        {stage === 1 && (
-          <>
-            <Typography variant="h6" align="center" gutterBottom>
-              Who's playing?
-            </Typography>
-            <TextField
-              label="Enter participants (comma-separated)"
-              fullWidth
-              margin="normal"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleParticipantsSubmit((e.target as HTMLInputElement).value);
-                }
-              }}
-            />
-            <Box display="flex" justifyContent="space-between" marginTop="1rem">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  const inputField = document.querySelector(
-                    'input[type=text]'
-                  ) as HTMLInputElement;
-                  if (inputField) handleParticipantsSubmit(inputField.value);
-                }}
-              >
-                Submit Participants
-              </Button>
-            </Box>
-          </>
-        )}
-
-        {/* Stage 2 - Options */}
-        {stage === 2 && (
-          <>
-            <Typography variant="h6" align="center" gutterBottom>
-              Enter Options
-            </Typography>
-            {options.map((option, index) => (
+        <animated.div style={stageTransition}>
+          {stage === 1 && (
+            <>
+              <Typography variant="h6" align="center" gutterBottom>
+                Who's playing?
+              </Typography>
               <TextField
-                key={index}
-                label={`Option ${index + 1}`}
-                value={option}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
+                label="Enter participants (comma-separated)"
                 fullWidth
                 margin="normal"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleParticipantsSubmit((e.target as HTMLInputElement).value);
+                  }
+                }}
               />
-            ))}
-            <Box display="flex" justifyContent="space-between" marginTop="1rem">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-                disabled={options.some((option) => option.trim() === "")}
-              >
-                Submit Options
-              </Button>
-            </Box>
-          </>
-        )}
+              <Box display="flex" justifyContent="space-between" marginTop="1rem">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    const inputField = document.querySelector(
+                      'input[type=text]'
+                    ) as HTMLInputElement;
+                    if (inputField) handleParticipantsSubmit(inputField.value);
+                  }}
+                >
+                  Submit Participants
+                </Button>
+              </Box>
+            </>
+          )}
+        </animated.div>
+
+        {/* Stage 2 - Options */}
+        <animated.div style={optionsTransition}>
+          {stage === 2 && (
+            <>
+              <Typography variant="h6" align="center" gutterBottom>
+                Enter Options
+              </Typography>
+              {options.map((option, index) => (
+                <TextField
+                  key={index}
+                  label={`Option ${index + 1}`}
+                  value={option}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  fullWidth
+                  margin="normal"
+                />
+              ))}
+              <Box display="flex" justifyContent="space-between" marginTop="1rem">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSubmit}
+                  disabled={options.some((option) => option.trim() === "")}
+                >
+                  Submit Options
+                </Button>
+              </Box>
+            </>
+          )}
+        </animated.div>
 
         {/* Stage 3 - Draggable options */}
-        {stage === 3 && (
-          <>
-            <Typography variant="h6" align="center" gutterBottom>
-              Approve two selections by dragging an option to the right of the screen.
-            </Typography>
-            <Box display="flex" justifyContent="center" marginTop="2rem">
-              <div
-                draggable
-                onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
-                style={{
-                  padding: "1rem",
-                  border: "1px solid",
-                  borderRadius: "8px",
-                  cursor: "grab",
-                  backgroundColor: darkMode ? "#444" : "#ddd",
-                  width: '100%', // Fills the space
-                }}
-              >
-                {options[0]}
-              </div>
-            </Box>
-          </>
-        )}
+        <animated.div style={draggableTransition}>
+          {stage === 3 && (
+            <>
+              <Typography variant="h6" align="center" gutterBottom>
+                Approve two selections by dragging an option to the right of the screen.
+              </Typography>
+              <Box display="flex" justifyContent="center" marginTop="2rem">
+                <div
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
+                  style={{
+                    padding: "1rem",
+                    border: "1px solid",
+                    borderRadius: "8px",
+                    cursor: "grab",
+                    backgroundColor: darkMode ? "#444" : "#ddd",
+                    width: '100%',
+                  }}
+                >
+                  {options[0]}
+                </div>
+              </Box>
+            </>
+          )}
+        </animated.div>
 
         {/* Stage 4 - Draggable options */}
-        {stage === 4 && (
-          <>
-            <Typography variant="h6" align="center" gutterBottom>
-              Approve one selection by dragging option to the right of the screen
-            </Typography>
-            <Box display="flex" justifyContent="center" marginTop="2rem">
-              <div
-                draggable
-                onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
+        <animated.div style={draggableTransition}>
+          {stage === 4 && (
+            <>
+              <Typography variant="h6" align="center" gutterBottom>
+                Approve one selection by dragging option to the right of the screen
+              </Typography>
+              <Box display="flex" justifyContent="center" marginTop="2rem">
+                <div
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
+                  style={{
+                    padding: "1rem",
+                    border: "1px solid",
+                    borderRadius: "8px",
+                    cursor: "grab",
+                    backgroundColor: darkMode ? "#444" : "#ddd",
+                    width: '100%',
+                  }}
+                >
+                  {options[0]}
+                </div>
+              </Box>
+            </>
+          )}
+        </animated.div>
+
+        {/* Final Selection */}
+        <animated.div style={finalSelectionTransition}>
+          {stage === 5 && (
+            <Modal
+              open={true}
+              onClose={() => {}}
+              aria-labelledby="final-selection-title"
+              aria-describedby="final-selection-description"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Box
                 style={{
-                  padding: "1rem",
-                  border: "1px solid",
-                  borderRadius: "8px",
-                  cursor: "grab",
-                  backgroundColor: darkMode ? "#444" : "#ddd",
-                  width: '100%', // Fills the space
+                  backgroundColor: darkMode ? '#444' : '#fff',
+                  color: darkMode ? '#fff' : '#000',
+                  padding: '2rem',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
                 }}
               >
-                {options[0]}
-              </div>
-            </Box>
-          </>
-        )}
+                <Confetti />
+                <Typography id="final-selection-title" variant="h4" gutterBottom>
+                  Final Selection
+                </Typography>
+                <Typography
+                  id="final-selection-description"
+                  variant="h5"
+                  style={{ fontWeight: 'bold' }}
+                >
+                  {finalOption}
+                </Typography>
+                <Button variant="outlined" color="secondary" onClick={handleReset} style={{ marginTop: '1rem' }}>
+                  Reset
+                </Button>
+              </Box>
+            </Modal>
+          )}
+        </animated.div>
+
 
         {/* Drop zones for Approved and Rejected lists */}
         {(stage === 3 || stage === 4) && (
