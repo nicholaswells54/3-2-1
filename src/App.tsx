@@ -167,17 +167,121 @@ const App: React.FC = () => {
         {stage === 3 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
-              Select Two Options
+              Approve two selections by dragging option to the right of the screen
             </Typography>
-            <Container>
-              <Box style={{ position: 'relative' }}>
-              </Box>
-            </Container>
+            <Box display="flex" justifyContent="center" marginTop="2rem">
+              <div
+                draggable
+                onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
+                style={{
+                  padding: "1rem",
+                  border: "1px solid",
+                  borderRadius: "8px",
+                  cursor: "grab",
+                  backgroundColor: darkMode ? "#444" : "#ddd",
+                }}
+              >
+                {options[0]}
+              </div>
+            </Box>
           </>
         )}
 
-        {/* Stage 4 - Take the 2 approved options from the previous stage, User drags top option (options[0]) to the approved or rejected side, option populates that listand moves to the last position in the index, moves to stage 5 when one option is approved.*/}
+        {/* Stage 4 - Take the 2 approved options from the previous stage, User drags top option (options[0]) to the approved or rejected side, option populates that list and moves to the last position in the index, moves to stage 5 when one option is approved.*/}
+        {stage === 4 && (
+          <>
+            <Typography variant="h6" align="center" gutterBottom>
+              Approve one selection by dragging option to the right of the screen
+            </Typography>
+            <Box display="flex" justifyContent="center" marginTop="2rem">
+              <div
+                draggable
+                onDragStart={(e) => e.dataTransfer.setData("text", options[0])}
+                style={{
+                  padding: "1rem",
+                  border: "1px solid",
+                  borderRadius: "8px",
+                  cursor: "grab",
+                  backgroundColor: darkMode ? "#444" : "#ddd",
+                }}
+              >
+                {options[0]}
+              </div>
+            </Box>
+          </>
+        )}
 
+        {/* Drop zones for Approved and Rejected lists */}
+        {(stage === 3 || stage === 4) && (
+        // Approved List
+        <Box display="flex" justifyContent="space-between" marginTop="2rem">
+          <Box
+            onDrop={(e) => {
+              e.preventDefault();
+              const draggedOption = e.dataTransfer.getData("text");
+              setApproved((prev) => [...prev, draggedOption]);
+              setOptions((prev) => {
+                const newOptions = prev.filter((option) => option !== draggedOption);
+                return [...newOptions, draggedOption];
+              });
+              setApprovedCount(approvedCount + 1);
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="33.33%" // Set to 1/3 of the screen width
+            height="100vh" // Make sure the box takes full height of the screen
+            borderColor={darkMode ? "lightgreen" : "darkgreen"}
+            bgcolor={darkMode ? "rgba(144, 238, 144, 0.2)" : "rgba(0, 128, 0, 0.1)"} // Light green for dark mode
+            position="fixed" // Fix the box on the screen
+            right="0" // Align to the left edge of the screen
+            top="0" // Align to the top of the screen
+          >
+            <Typography variant="h6" gutterBottom>
+              Approved
+            </Typography>
+            <ul>
+              {approved.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </Box>
+
+          {/* Rejected List */}
+          <Box
+            onDrop={(e) => {
+              e.preventDefault();
+              const draggedOption = e.dataTransfer.getData("text");
+              setRejected((prev) => [...prev, draggedOption]);
+              setOptions((prev) => {
+                const newOptions = prev.filter((option) => option !== draggedOption);
+                return [...newOptions, draggedOption];
+              });
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            border={1}
+            padding="1rem"
+            borderRadius="8px"
+            width="33.33%" // Set to 1/3 of the screen width
+            height="100vh" // Make sure the box takes full height of the screen
+            borderColor={darkMode ? "lightcoral" : "darkred"}
+            bgcolor={darkMode ? "rgba(255, 99, 71, 0.2)" : "rgba(139, 0, 0, 0.1)"} // Light red for dark mode
+            position="fixed" // Fix the box on the screen
+            left="0" // Align to the right edge of the screen
+            top="0" // Align to the top of the screen
+          >
+            <Typography variant="h6" gutterBottom>
+              Rejected
+            </Typography>
+            <ul>
+              {rejected.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </Box>
+        </Box>
+        )}
 
         {participants.length > 0 && (
           <>
@@ -224,51 +328,6 @@ const App: React.FC = () => {
           </Button>
         </Box>
       </Container>
-      {/* Approved and Rejected lists side by side */}
-      {(stage === 4 || stage === 3) && (
-        <Box display="flex" justifyContent="space-between" marginTop="2rem" style={{ width: '100%' }}>
-          <Box
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="33.33%" // Set to 1/3 of the screen width
-            height="100vh" // Make sure the box takes full height of the screen
-            borderColor={darkMode ? "lightgreen" : "darkgreen"}
-            bgcolor={darkMode ? "rgba(144, 238, 144, 0.2)" : "rgba(0, 128, 0, 0.1)"} // Light green for dark mode
-            position="fixed" // Fix the box on the screen
-            right="0" // Align to the left edge of the screen
-            top="0" // Align to the top of the screen
-          >
-            <Typography variant="h6" gutterBottom color={darkMode ? "lightgreen" : "darkgreen"}>Approved</Typography>
-            <ul>
-              {approved.map((card, index) => (
-                <li key={index}>{card}</li>
-              ))}
-            </ul>
-          </Box>
-
-          <Box
-            border={1}
-            padding="1rem"
-            borderRadius="8px"
-            width="33.33%" // Set to 1/3 of the screen width
-            height="100vh" // Make sure the box takes full height of the screen
-            borderColor={darkMode ? "lightcoral" : "darkred"}
-            bgcolor={darkMode ? "rgba(255, 99, 71, 0.2)" : "rgba(139, 0, 0, 0.1)"} // Light red for dark mode
-            position="fixed" // Fix the box on the screen
-            left="0" // Align to the right edge of the screen
-            top="0" // Align to the top of the screen
-          >
-            <Typography variant="h6" gutterBottom color={darkMode ? "lightcoral" : "darkred"}>Rejected</Typography>
-            <ul>
-              {rejected.map((card, index) => (
-                <li key={index}>{card}</li>
-              ))}
-            </ul>
-          </Box>
-        </Box>
-      )}
-
     </ThemeProvider>
   );
 };
