@@ -136,9 +136,8 @@ const App: React.FC = () => {
           </Modal>
         )}
 
-
         <Typography variant="h4" align="center" gutterBottom>
-          Let's Play 3-2-1!
+          3-2-1
         </Typography>
 
         {/* Stage 1 - Participants */}
@@ -203,7 +202,7 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* Stage 3 - User drags top option (options[0]) to the approved or rejected side, option populates that list and moves to the last position in the index, moves to stage 4 once 2 options are approved*/}
+        {/* Stage 3 - Draggable options */}
         {stage === 3 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -219,6 +218,7 @@ const App: React.FC = () => {
                   borderRadius: "8px",
                   cursor: "grab",
                   backgroundColor: darkMode ? "#444" : "#ddd",
+                  width: '100%', // Fills the space
                 }}
               >
                 {options[0]}
@@ -227,7 +227,7 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* Stage 4 - Take the 2 approved options from the previous stage, User drags top option (options[0]) to the approved or rejected side, option populates that list and moves to the last position in the index, moves to stage 5 when one option is approved.*/}
+        {/* Stage 4 - Draggable options */}
         {stage === 4 && (
           <>
             <Typography variant="h6" align="center" gutterBottom>
@@ -243,6 +243,7 @@ const App: React.FC = () => {
                   borderRadius: "8px",
                   cursor: "grab",
                   backgroundColor: darkMode ? "#444" : "#ddd",
+                  width: '100%', // Fills the space
                 }}
               >
                 {options[0]}
@@ -265,32 +266,28 @@ const App: React.FC = () => {
                     const newCount = prev + 1;
 
                     if (stage === 3 && newCount === 2) {
-                      // Transition to stage 4
                       setStage(4);
-                      setOptions([...approved, draggedOption]); // Set stage 4 options to approved list
-                      setApproved([]); // Reset approved list
-                      setRejected([]); // Reset rejected list
-                      return 0; // Reset approved count for stage 4
+                      setOptions([...approved, draggedOption]);
+                      setApproved([]);
+                      setRejected([]);
+                      return 0;
                     }
 
                     if (stage === 4 && newCount === 1) {
-                      // Transition to stage 5
-                      setFinalOption(draggedOption); // Finalize the approved option
+                      setFinalOption(draggedOption);
                       setStage(5);
-                      return 0; // Reset approved count
+                      return 0;
                     }
 
                     return newCount;
                   });
                 }
-                setOptions((prev) =>
-                  prev.filter((option) => option !== draggedOption)
-                );
+                setOptions((prev) => prev.filter((option) => option !== draggedOption));
               }}
               onDragOver={(e) => e.preventDefault()}
               border={1}
               padding="1rem"
-              borderRadius="8px"
+              borderRadius="0" // Sharp corners
               width="33.33%"
               height="100vh"
               borderColor={darkMode ? "lightgreen" : "darkgreen"}
@@ -322,11 +319,10 @@ const App: React.FC = () => {
                   return [...updatedOptions, draggedOption];
                 });
               }}
-              
               onDragOver={(e) => e.preventDefault()}
               border={1}
               padding="1rem"
-              borderRadius="8px"
+              borderRadius="0" // Sharp corners
               width="33.33%"
               height="100vh"
               borderColor={darkMode ? "lightcoral" : "darkred"}
@@ -346,8 +342,6 @@ const App: React.FC = () => {
             </Box>
           </Box>
         )}
-
-
 
         {participants.length > 0 && (
           <>
