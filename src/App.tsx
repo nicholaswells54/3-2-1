@@ -317,10 +317,12 @@ const App: React.FC = () => {
                 if (!rejected.includes(draggedOption)) {
                   setRejected((prev) => [...prev, draggedOption]);
                 }
-                setOptions((prev) =>
-                  prev.filter((option) => option !== draggedOption)
-                );
+                setOptions((prev) => {
+                  const updatedOptions = prev.filter((option) => option !== draggedOption);
+                  return [...updatedOptions, draggedOption];
+                });
               }}
+              
               onDragOver={(e) => e.preventDefault()}
               border={1}
               padding="1rem"
