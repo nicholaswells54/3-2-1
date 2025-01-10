@@ -223,9 +223,23 @@ const App: React.FC = () => {
                   setApproved((prev) => [...prev, draggedOption]);
                   setApprovedCount((prev) => {
                     const newCount = prev + 1;
+
                     if (stage === 3 && newCount === 2) {
-                      setStage(4); // Move to stage 4 after two approvals
+                      // Transition to stage 4
+                      setStage(4);
+                      setOptions([...approved, draggedOption]); // Set stage 4 options to approved list
+                      setApproved([]); // Reset approved list
+                      setRejected([]); // Reset rejected list
+                      return 0; // Reset approved count for stage 4
                     }
+
+                    if (stage === 4 && newCount === 1) {
+                      // Transition to stage 5
+                      setFinalOption(draggedOption); // Finalize the approved option
+                      setStage(5);
+                      return 0; // Reset approved count
+                    }
+
                     return newCount;
                   });
                 }
@@ -254,6 +268,7 @@ const App: React.FC = () => {
                 ))}
               </ul>
             </Box>
+
             {/* Rejected List */}
             <Box
               onDrop={(e) => {
@@ -289,6 +304,8 @@ const App: React.FC = () => {
             </Box>
           </Box>
         )}
+
+
 
         {participants.length > 0 && (
           <>
