@@ -129,12 +129,7 @@ const App: React.FC = () => {
               >
                 {finalOption}
               </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleReset}
-                style={{ marginTop: '1rem' }}
-              >
+              <Button variant="outlined" color="secondary" onClick={handleReset} style={{ marginTop: '1rem' }}>
                 Reset
               </Button>
             </Box>
