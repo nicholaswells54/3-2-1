@@ -1,1 +1,1 @@
-Make smooth transition animations for when the user goes between each stage in this application. Keep all stages and functionality from the code I provided in the first prompt I gave you
+can you separate stage 3 into its own separate file and alter app.tsx to reference stage 3 correctly?
