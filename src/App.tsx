@@ -13,7 +13,6 @@ import {
   CssBaseline,
   Modal
 } from '@mui/material';
-import Confetti from 'react-confetti';
 import { useSpring, animated } from '@react-spring/web';
 import Stage1 from './Stage1.tsx';
 import Stage2 from './Stage2.tsx';
@@ -23,7 +22,7 @@ import Stage5 from './Stage5.tsx';
 
 
 const App: React.FC = () => {
-  const [stage, setStage] = useState<number>(1);
+  const [stage, setStage] = useState<number>(0);
   const [participants, setParticipants] = useState<string[]>([]);
   const [options, setOptions] = useState<string[]>(["", "", ""]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -48,6 +47,12 @@ const App: React.FC = () => {
         },
       },
     },
+  });
+
+  // Define transition for stages
+  const startPageTransition = useSpring({
+    opacity: stage === 0 ? 1 : 0,
+    transform: stage === 0 ? 'translateY(0)' : 'translateY(100%)',
   });
 
   const handleParticipantsSubmit = (input: string): void => {
@@ -88,7 +93,7 @@ const App: React.FC = () => {
   };
 
   const handleReset = (): void => {
-    setStage(1);
+    setStage(0);
     setParticipants([]);
     setOptions(["", "", ""]);
     setSelected([]);
@@ -96,6 +101,14 @@ const App: React.FC = () => {
     setApprovedCount(0);
     setApproved([]); // Reset approved list
     setRejected([]); // Reset rejected list
+  };
+
+  const handleCustomClick = () => {
+    setStage(1); // Go to stage 1
+  };
+
+  const handleSteamClick = () => {
+    setStage(-1); // Show Work in Progress page
   };
 
   // Define transition animations
@@ -134,6 +147,32 @@ const App: React.FC = () => {
         <Typography variant="h4" align="center" gutterBottom>
           3-2-1
         </Typography>
+
+        {/* Start Page with buttons */}
+        <animated.div style={startPageTransition}>
+          {stage === 0 && (
+            <Box textAlign="center">
+              <Typography variant="h6" gutterBottom>
+                Welcome to the 3-2-1 Game!
+              </Typography>
+              <Button variant="contained" color="primary" onClick={handleCustomClick} style={{ margin: '10px' }}>
+                Custom
+              </Button>
+              <Button variant="contained" color="secondary" onClick={handleSteamClick} style={{ margin: '10px' }}>
+                Steam
+              </Button>
+            </Box>
+          )}
+        </animated.div>
+
+        {/* Work in Progress message */}
+        {stage === -1 && (
+          <Box textAlign="center">
+            <Typography variant="h6" gutterBottom>
+              Work in Progress
+            </Typography>
+          </Box>
+        )}
 
         {/* Stage 1 - Participants */}
         <animated.div style={stageTransition}>
