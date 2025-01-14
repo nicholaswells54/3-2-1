@@ -54,8 +54,7 @@ The frontend files (HTML, CSS, JavaScript) are served from a public directory. M
     │   └── app.js          # Frontend JavaScript file
     │
     ├── server.js           # Express.js backend file
-    ├── package.json        # Node.js dependencies and scripts
-    └── README.md           # This file
+    └── package.json        # Node.js dependencies and scripts
 
 
 Step 4:
