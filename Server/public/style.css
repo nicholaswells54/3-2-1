@@ -1,0 +1,82 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+  }
+  
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  main {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+  
+  footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  .game-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 250px;
+    margin: 15px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .game-card img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  
+  .game-card h3 {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  
+  .game-card p {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .game-card .price {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  .game-card .discount {
+    color: red;
+  }
+  
+  .game-card .free-to-play {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .game-card a {
+    display: inline-block;
+    margin-top: 10px;
+    text-decoration: none;
+    background-color: #333;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+  }
+  

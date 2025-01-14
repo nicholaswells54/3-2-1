@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Genre Search</title>
+  <style>
+    /* Styling to improve the layout */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .game-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      max-width: 300px;
+      display: inline-block;
+      margin-right: 10px;
+      text-align: center;
+    }
+    .game-card img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Game Genre Search</h1>
+
+  <label for="tab">Select Tab: </label>
+  <select id="tab">
+    <option value="topsellers">Top Sellers</option>
+    <option value="new_releases">New Releases</option>
+    <option value="specials">Specials</option>
+    <option value="coming_soon">Coming Soon</option>
+  </select>
+
+  <label for="genre">Enter Genre: </label>
+  <input type="text" id="genre" placeholder="e.g., horror, action, adventure">
+  
+  <button onclick="fetchGames()">Search Games</button>
+
+  <div id="message"></div>
+  
+  <div id="gameList" class="game-list"></div>
+
+  <script>
+    // Function to fetch games based on the selected tab and genre input
+    async function fetchGames() {
+      const tabInput = document.getElementById('tab').value;  // Get the selected tab
+      const genreInput = document.getElementById('genre').value.trim();
+      const messageElement = document.getElementById('message');
+      const gameListElement = document.getElementById('gameList');
+
+      if (!genreInput) {
+        messageElement.innerHTML = '<p class="error">Please enter a genre!</p>';
+        return;
+      }
+
+      messageElement.innerHTML = 'Loading games...';
+      gameListElement.innerHTML = '';  // Clear the previous results
+
+      try {
+        // Construct the API URL with both the selected tab and genre
+        const response = await fetch(`/api/reload/${tabInput}/${genreInput}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          // Filter and display unique games
+          const uniqueGames = filterUniqueGames(data.games);
+          
+          // Update the message with the correct number of unique games
+          messageElement.innerHTML = `<p>Found ${uniqueGames.length} unique games for "${genreInput}" genre in the "${tabInput}" tab.</p>`;
+          
+          displayGames(uniqueGames);
+        } else {
+          messageElement.innerHTML = `<p class="error">${data.message || 'No games found for this genre.'}</p>`;
+        }
+      } catch (error) {
+        console.error('Error fetching games:', error);
+        messageElement.innerHTML = '<p class="error">Error fetching games. Please try again later.</p>';
+      }
+    }
+
+    // Function to filter out duplicate games based on steamId
+    function filterUniqueGames(games) {
+      const uniqueGames = new Map();
+
+      games.forEach(game => {
+        // If the game with this steamId isn't already added, add it to the map
+        if (!uniqueGames.has(game.steamId)) {
+          uniqueGames.set(game.steamId, game);
+        }
+      });
+
+      return Array.from(uniqueGames.values());
+    }
+
+    // Function to display games on the page
+    function displayGames(games) {
+      const gameListElement = document.getElementById('gameList');
+
+      // Clear the current list before adding the new unique games
+      gameListElement.innerHTML = '';
+
+      games.forEach(game => {
+        const gameCard = document.createElement('div');
+        gameCard.classList.add('game-card');
+        
+        gameCard.innerHTML = `
+          <img src="${game.imageUrl}" alt="${game.name}">
+          <h3>${game.name}</h3>
+          <p>${game.description}</p>
+          <p><strong>Price:</strong> ${game.price || 'Free to Play'}</p>
+          <p><strong>Rating:</strong> ${game.rating || 'N/A'}</p>
+          <a href="${game.steamUrl}" target="_blank">View on Steam</a>
+        `;
+        
+        gameListElement.appendChild(gameCard);
+      });
+    }
+  </script>
+
+</body>
+</html>
+
+
+
