@@ -212,11 +212,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/gameRecommendationDB', {
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log(err));
 
+// Steam API key - replace this with your own API key
+
+// Custom User-Agent header to bypass access restrictions
+const headers = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Accept': 'application/json',
+};
+
 // Function to fetch game details using the Steam API based on the game ID
 const fetchGameDetails = async (gameId) => {
   try {
-    const gameDetails = await axios.get('https://store.steampowered.com/api/appdetails', {
-      params: { appids: gameId }
+    const gameDetails = await axios.get(`https://api.steampowered.com/ISteamApps/GetAppDetails/v2?appids=${gameId}`, {
+      headers: headers, // Pass the custom headers with the request
     });
 
     const gameData = gameDetails.data[gameId]?.data;
@@ -247,41 +255,51 @@ const fetchGameDetails = async (gameId) => {
   }
 };
 
-// Function to fetch games by genre
-const fetchGamesByGenre = async (genre) => {
+// Function to fetch games by genre and tab
+const fetchGamesByTabAndGenre = async (tab, genre) => {
   try {
     const steamApiUrl = 'https://store.steampowered.com/api/featuredcategories/';
     const response = await axios.get(steamApiUrl, {
-      params: { genre: genre },
+      params: {},  // No genre or tab here, you can filter after fetching the data
+      headers: headers, // Pass the custom headers with the request
     });
-
-    console.log('Steam API response:', JSON.stringify(response.data, null, 2));
 
     const categories = ['specials', 'topsellers', 'new_releases', 'coming_soon'];
     let gameIds = [];
 
-    categories.forEach(category => {
-      if (response.data[category] && Array.isArray(response.data[category].items)) {
-        gameIds.push(...response.data[category].items.map(item => item.id));
-      }
-    });
+    // Loop through the available categories and get games for the selected tab
+    if (categories.includes(tab)) {
+      const categoryData = response.data[tab];
 
-    if (gameIds.length === 0) {
-      throw new Error(`No games found for genre: ${genre}`);
+      if (categoryData && Array.isArray(categoryData.items)) {
+        gameIds = categoryData.items.map(item => item.id);
+      }
     }
 
+    if (gameIds.length === 0) {
+      throw new Error(`No games found for tab: ${tab}`);
+    }
+
+    // Now, fetch game details for each game ID
     const games = [];
     for (const appId of gameIds) {
       const gameDetails = await fetchGameDetails(appId);
       if (gameDetails) {
-        games.push(gameDetails);
+        // Filter games by genre if the genre is provided
+        if (genre) {
+          if (gameDetails.genre.includes(genre)) {
+            games.push(gameDetails);
+          }
+        } else {
+          games.push(gameDetails);  // If no genre is specified, add all games
+        }
       }
     }
 
     return games;
   } catch (error) {
-    console.error('Error fetching games by genre:', error);
-    throw new Error('Failed to fetch games by genre');
+    console.error('Error fetching games by tab and genre:', error);
+    throw new Error('Failed to fetch games by tab and genre');
   }
 };
 
@@ -292,22 +310,22 @@ const saveGamesToDatabase = async (games) => {
     let totalGamesUpdated = 0;
 
     for (const game of games) {
-      console.log('Saving game:', game);  // Log game data before saving
+      console.log('Processing game:', game);  // Log game data before saving
 
       // Check if the game already exists based on steamId
       const existingGame = await Game.findOne({ steamId: game.steamId });
 
       if (!existingGame) {
-        // Save the new game
+        // Save the new game if it doesn't exist
         const newGame = new Game(game);
         await newGame.save();
         totalGamesAdded++;
         console.log(`Saved new game: ${game.name}`);
       } else {
-        // Update the existing game
+        // If the game already exists, update the existing game instead of adding a new one
         console.log('Updating existing game:', game.steamId);
 
-        // Exclude createdAt to avoid overwriting it
+        // Update the game details without overwriting the createdAt field
         existingGame.name = game.name;
         existingGame.description = game.description;
         existingGame.imageUrl = game.imageUrl;
@@ -322,7 +340,7 @@ const saveGamesToDatabase = async (games) => {
         existingGame.discountPercentage = game.discountPercentage;
 
         // Avoid modifying createdAt
-        existingGame.createdAt = existingGame.createdAt; // Keep the original createdAt
+        existingGame.createdAt = existingGame.createdAt; // Keep the original createdAt field
 
         await existingGame.save();
         totalGamesUpdated++;
@@ -336,39 +354,38 @@ const saveGamesToDatabase = async (games) => {
   }
 };
 
-// Endpoint to reload games based on a genre
-app.get('/api/reload/:genre', async (req, res) => {
-  const genre = req.params.genre;
+// Endpoint to reload games based on a tab and genre
+app.get('/api/reload/:tab/:genre?', async (req, res) => {
+  const { tab, genre } = req.params;
 
   try {
-    console.log(`Fetching and saving games for genre: "${genre}"`);
+    console.log(`Fetching and saving games for tab: "${tab}" and genre: "${genre || 'all'}"`);
 
-    // Fetch games for the specified genre
-    const games = await fetchGamesByGenre(genre);
-    console.log(`Fetched ${games.length} games for genre "${genre}"`);
-    console.log('Games data:', games);
+    // Fetch games for the specified tab and genre
+    const games = await fetchGamesByTabAndGenre(tab, genre);
+    console.log(`Fetched ${games.length} games for tab "${tab}" and genre "${genre || 'all'}"`);
 
     if (games.length === 0) {
-      return res.status(404).json({ message: `No games found for genre: ${genre}` });
+      return res.status(404).json({ message: `No games found for tab "${tab}" and genre "${genre || 'all'}"` });
     }
 
     // Save fetched games to MongoDB
     await saveGamesToDatabase(games);
 
-    // Fetch and return the saved games for that genre
-    const savedGames = await Game.find({ genre: genre });
+    // Fetch and return the saved games for that tab and genre
+    const savedGames = await Game.find({ genre: genre || { $exists: true } });
 
     if (savedGames.length === 0) {
-      return res.status(404).json({ message: `No saved games found for genre: ${genre}` });
+      return res.status(404).json({ message: `No saved games found for tab "${tab}" and genre "${genre || 'all'}"` });
     }
 
     res.status(200).json({
-      message: `Games for genre "${genre}" have been reloaded.`,
+      message: `Games for tab "${tab}" and genre "${genre || 'all'}" have been reloaded.`,
       games: savedGames
     });
   } catch (error) {
-    console.error('Error in /api/reload/:genre:', error);
-    res.status(500).json({ error: `Failed to reload games for genre "${genre}"` });
+    console.error('Error in /api/reload/:tab/:genre:', error);
+    res.status(500).json({ error: `Failed to reload games for tab "${tab}" and genre "${genre || 'all'}"` });
   }
 });
 
@@ -377,6 +394,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
 
 
 

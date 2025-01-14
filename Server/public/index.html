@@ -29,19 +29,22 @@
     .error {
       color: red;
     }
+    .checkbox-group {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
   <h1>Game Genre Search</h1>
 
-  <label for="tab">Select Tab: </label>
-  <select id="tab">
-    <option value="topsellers">Top Sellers</option>
-    <option value="new_releases">New Releases</option>
-    <option value="specials">Specials</option>
-    <option value="coming_soon">Coming Soon</option>
-  </select>
+  <div class="checkbox-group">
+    <label>Select Tabs to Search:</label><br>
+    <input type="checkbox" id="topsellers" value="topsellers"> Top Sellers<br>
+    <input type="checkbox" id="new_releases" value="new_releases"> New Releases<br>
+    <input type="checkbox" id="specials" value="specials"> Specials<br>
+    <input type="checkbox" id="coming_soon" value="coming_soon"> Coming Soon<br>
+  </div>
 
   <label for="genre">Enter Genre: </label>
   <input type="text" id="genre" placeholder="e.g., horror, action, adventure">
@@ -53,24 +56,35 @@
   <div id="gameList" class="game-list"></div>
 
   <script>
-    // Function to fetch games based on the selected tab and genre input
+    // Function to fetch games based on selected tabs and genre input
     async function fetchGames() {
-      const tabInput = document.getElementById('tab').value;  // Get the selected tab
-      const genreInput = document.getElementById('genre').value.trim();
       const messageElement = document.getElementById('message');
       const gameListElement = document.getElementById('gameList');
+      const genreInput = document.getElementById('genre').value.trim();
 
+      // Get the selected tabs
+      const selectedTabs = [];
+      const tabCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+      tabCheckboxes.forEach(checkbox => selectedTabs.push(checkbox.value));
+
+      // If no tabs are selected, show an error
+      if (selectedTabs.length === 0) {
+        messageElement.innerHTML = '<p class="error">Please select at least one Steam tab!</p>';
+        return;
+      }
+
+      // If no genre is entered, show an error
       if (!genreInput) {
         messageElement.innerHTML = '<p class="error">Please enter a genre!</p>';
         return;
       }
 
       messageElement.innerHTML = 'Loading games...';
-      gameListElement.innerHTML = '';  // Clear the previous results
+      gameListElement.innerHTML = '';  // Clear previous results
 
       try {
-        // Construct the API URL with both the selected tab and genre
-        const response = await fetch(`/api/reload/${tabInput}/${genreInput}`);
+        // Construct the API URL with both selected tabs and genre
+        const response = await fetch(`/api/reload/${selectedTabs.join(',')}/${genreInput}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -78,7 +92,7 @@
           const uniqueGames = filterUniqueGames(data.games);
           
           // Update the message with the correct number of unique games
-          messageElement.innerHTML = `<p>Found ${uniqueGames.length} unique games for "${genreInput}" genre in the "${tabInput}" tab.</p>`;
+          messageElement.innerHTML = `<p>Found ${uniqueGames.length} unique games for "${genreInput}" genre in the selected tabs.</p>`;
           
           displayGames(uniqueGames);
         } else {
