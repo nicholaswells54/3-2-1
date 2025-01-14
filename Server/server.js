@@ -11,20 +11,35 @@ app.use(express.json());
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Function to fetch games by genre
-const fetchGamesByGenre = async (genre) => {
+// Function to fetch games by genre with pagination support
+const fetchGamesByGenre = async (genre, page = 1) => {
   try {
-    // Fetch game IDs based on the genre
-    const response = await axios.get(`https://store.steampowered.com/api/getappsingenre/?genre=${genre}&cc=us&l=english`);
-    
-    if (!response.data.tabs || !response.data.tabs.topsellers || !response.data.tabs.topsellers.items) {
-      throw new Error(`No games found for genre: ${genre}`);
+    const allGameIds = [];
+    const gamesPerPage = 100; // Fetch 100 games per page
+    let hasMore = true;
+
+    // Loop to fetch additional pages if needed
+    while (hasMore) {
+      const response = await axios.get(`https://store.steampowered.com/api/getappsingenre/?genre=${genre}&cc=us&l=english&page=${page}`);
+      
+      if (!response.data.tabs || !response.data.tabs.topsellers || !response.data.tabs.topsellers.items) {
+        throw new Error(`No games found for genre: ${genre}`);
+      }
+
+      // Map the items to gameIds
+      const gameIds = response.data.tabs.topsellers.items.map(item => item.id);
+      console.log(`Page ${page}: Queried ${gameIds.length} games`);
+
+      // Add the gameIds to the list of allGameIds
+      allGameIds.push(...gameIds);
+
+      // Check if we should query more pages
+      hasMore = gameIds.length === gamesPerPage;
+      page++; // Move to the next page
     }
 
-    const gameIds = response.data.tabs.topsellers.items.map(item => item.id);
-    
     // Fetch game details for each game ID, including reviews
-    const gameDetailsPromises = gameIds.map(id => fetchGameDetails(id));
+    const gameDetailsPromises = allGameIds.map(id => fetchGameDetails(id));
     let gameDetails = await Promise.all(gameDetailsPromises);
 
     // Fetch reviews for each game and attach them to the game details
@@ -39,10 +54,13 @@ const fetchGamesByGenre = async (genre) => {
     gameDetails = gameDetails.filter(game => game !== null);  // Remove null values
     gameDetails.sort((a, b) => b.reviews - a.reviews);  // Sort by number of reviews
 
-    return gameDetails;
+    return {
+      games: gameDetails,
+      hasMore: hasMore,
+    };
   } catch (error) {
     console.error('Error fetching games:', error);
-    return [];
+    return { games: [], hasMore: false };
   }
 };
 
@@ -98,12 +116,13 @@ const fetchGameReviews = async (appId) => {
   }
 };
 
-// Endpoint to reload games based on the selected genre
+// Endpoint to reload games based on the selected genre with pagination
 app.get('/api/reload/:genre', async (req, res) => {
   const genre = req.params.genre;
-  
+  const page = parseInt(req.query.page) || 1;  // Get the page number from query parameters (default to 1)
+
   try {
-    const games = await fetchGamesByGenre(genre);
+    const { games, hasMore } = await fetchGamesByGenre(genre, page);
     
     if (games.length === 0) {
       return res.status(404).json({ message: `No games found for genre: ${genre}` });
@@ -112,6 +131,7 @@ app.get('/api/reload/:genre', async (req, res) => {
     res.status(200).json({
       message: `Found ${games.length} games for genre "${genre}".`,
       games: games,
+      hasMore: hasMore,  // Send whether there are more games
     });
   } catch (error) {
     console.error('Error in /api/reload/:genre:', error);

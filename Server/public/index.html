@@ -48,6 +48,18 @@
     .error {
       color: red;
     }
+    #nextPageButton {
+      display: none;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #nextPageButton:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -63,7 +75,13 @@
   
   <div id="gameList" class="game-list"></div>
 
+  <button id="nextPageButton" onclick="fetchNextPage()">Next Page</button>
+
   <script>
+    let currentPage = 1;  // Track the current page
+    let currentGenre = ''; // Store the genre input for fetching games
+
+    // Fetch the first page of games based on the genre
     async function fetchGames() {
       const genreInput = document.getElementById('genre').value.trim();
       const messageElement = document.getElementById('message');
@@ -74,16 +92,22 @@
         return;
       }
 
+      currentGenre = genreInput;  // Store the genre for further requests
+      currentPage = 1;  // Reset to first page
       messageElement.innerHTML = 'Loading games...';
       gameListElement.innerHTML = '';
+      document.getElementById('nextPageButton').style.display = 'none'; // Hide the Next Page button initially
 
       try {
-        const response = await fetch(`/api/reload/${genreInput}`);
+        const response = await fetch(`/api/reload/${genreInput}?page=${currentPage}`);
         const data = await response.json();
 
         if (response.ok) {
           messageElement.innerHTML = `<p>Found ${data.games.length} games for "${genreInput}" genre.</p>`;
           displayGames(data.games);
+          if (data.hasMore) {
+            document.getElementById('nextPageButton').style.display = 'inline'; // Show the Next Page button if more games are available
+          }
         } else {
           messageElement.innerHTML = `<p class="error">${data.message || 'No games found for this genre.'}</p>`;
         }
@@ -93,10 +117,9 @@
       }
     }
 
+    // Display the list of games in the HTML
     function displayGames(games) {
       const gameListElement = document.getElementById('gameList');
-      gameListElement.innerHTML = '';
-
       games.forEach(game => {
         const gameCard = document.createElement('div');
         gameCard.classList.add('game-card');
@@ -107,11 +130,35 @@
           <p><strong>Genre:</strong> ${game.genre.join(', ')}</p>
           <p><strong>Price:</strong> ${game.price || 'Free to Play'}</p>
           <p><strong>Rating:</strong> ${game.rating || 'N/A'}</p>
-          <p><strong>Reviews:</strong> ${game.reviews} reviews</p>
+          <p><strong>Reviews:</strong> ${game.reviews || 0}</p>
           <a href="${game.steamUrl}" target="_blank">View on Steam</a>
         `;
         gameListElement.appendChild(gameCard);
       });
+    }
+
+    // Fetch next page of games
+    async function fetchNextPage() {
+      currentPage++;  // Increment page number
+      const messageElement = document.getElementById('message');
+      messageElement.innerHTML = 'Loading more games...';
+
+      try {
+        const response = await fetch(`/api/reload/${currentGenre}?page=${currentPage}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          displayGames(data.games);
+          if (!data.hasMore) {
+            document.getElementById('nextPageButton').style.display = 'none'; // Hide button if no more games
+          }
+        } else {
+          messageElement.innerHTML = `<p class="error">${data.message || 'No more games found.'}</p>`;
+        }
+      } catch (error) {
+        console.error('Error fetching next page of games:', error);
+        messageElement.innerHTML = '<p class="error">Error fetching more games. Please try again later.</p>';
+      }
     }
   </script>
 
