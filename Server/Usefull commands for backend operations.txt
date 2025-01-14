@@ -1,7 +1,0 @@
-1. Kill server on local port commands in order
-    Command to find local port id
-        netstat -ano | findstr :<PORT>
-    Command to kill local port
-        taskkill /PID <PID> /F
-    
-    Note: Use in system cmd 
