@@ -1,1 +1,0 @@
-can you separate stage 3 into its own separate file and alter app.tsx to reference stage 3 correctly?
