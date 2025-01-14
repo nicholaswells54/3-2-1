@@ -107,6 +107,7 @@
           <p><strong>Genre:</strong> ${game.genre.join(', ')}</p>
           <p><strong>Price:</strong> ${game.price || 'Free to Play'}</p>
           <p><strong>Rating:</strong> ${game.rating || 'N/A'}</p>
+          <p><strong>Reviews:</strong> ${game.reviews} reviews</p>
           <a href="${game.steamUrl}" target="_blank">View on Steam</a>
         `;
         gameListElement.appendChild(gameCard);
@@ -116,4 +117,3 @@
 
 </body>
 </html>
-
