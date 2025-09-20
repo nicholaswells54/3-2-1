@@ -19,6 +19,7 @@ import Stage2 from './Stage2.tsx';
 import Stage3 from './Stage3.tsx';
 import Stage4 from './Stage4.tsx';
 import Stage5 from './Stage5.tsx';
+import SteamProfile from './SteamProfile.tsx';
 
 
 const App: React.FC = () => {
@@ -108,7 +109,7 @@ const App: React.FC = () => {
   };
 
   const handleSteamClick = () => {
-    setStage(-1); // Show Work in Progress page
+    setStage(-2); // Show Steam Profile page
   };
 
   // Define transition animations
@@ -172,6 +173,14 @@ const App: React.FC = () => {
               Work in Progress
             </Typography>
           </Box>
+        )}
+
+        {/* Steam Profile Component */}
+        {stage === -2 && (
+          <SteamProfile 
+            darkMode={darkMode} 
+            onBack={handleReset}
+          />
         )}
 
         {/* Stage 1 - Participants */}
@@ -331,7 +340,7 @@ const App: React.FC = () => {
         )}
 
 
-        {participants.length > 0 && (
+        {participants.length > 0 && stage !== -2 && (
           <>
             <Box
               style={{
@@ -357,24 +366,26 @@ const App: React.FC = () => {
         )}
 
         {/* Fixed position buttons */}
-        <Box
-          style={{
-            position: 'fixed',
-            bottom: 20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            display: 'flex',
-            gap: '10px',
-          }}
-        >
-          <Button variant="outlined" color="secondary" onClick={handleParticipantChange}>
-            Next Participant
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={handleReset}>
-            Reset
-          </Button>
-        </Box>
+        {stage !== -2 && (
+          <Box
+            style={{
+              position: 'fixed',
+              bottom: 20,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1000,
+              display: 'flex',
+              gap: '10px',
+            }}
+          >
+            <Button variant="outlined" color="secondary" onClick={handleParticipantChange}>
+              Next Participant
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleReset}>
+              Reset
+            </Button>
+          </Box>
+        )}
       </Container>
     </ThemeProvider>
   );
