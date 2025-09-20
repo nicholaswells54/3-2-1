@@ -349,24 +349,36 @@ const SteamProfile: React.FC<SteamProfileProps> = ({ darkMode, onBack }) => {
                   Most Played Games
                 </Typography>
                 <List>
-                  {games.slice(0, 5).map((game, index) => (
-                    <ListItem key={game.appid}>
-                      <ListItemText
-                        primary={game.name}
-                        secondary={`${formatHours(game.playtime_forever)} played`}
-                      />
-                      <Box>
-                        {game.genres?.map((genre) => (
-                          <Chip
-                            key={genre}
-                            label={genre}
-                            size="small"
-                            style={{ margin: '2px' }}
-                          />
-                        ))}
-                      </Box>
-                    </ListItem>
-                  ))}
+                    {games
+                        .slice() // create a shallow copy
+                        .sort((a, b) => b.playtime_forever - a.playtime_forever) // sort descending
+                        .slice(0, 5)
+                        .map((game, index) => (
+                            <ListItem key={game.appid}>
+                                <Box display="flex" alignItems="center">
+                                <img
+                                    src={`https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`}
+                                    alt={game.name}
+                                    style={{ width: 32, height: 32, marginRight: 12, borderRadius: 4 }}
+                                />
+                                <ListItemText
+                                    primary={game.name}
+                                    secondary={`${formatHours(game.playtime_forever)} played`}
+                                />
+                                </Box>
+                                <Box>
+                                {game.genres?.map((genre) => (
+                                    <Chip
+                                    key={genre}
+                                    label={genre}
+                                    size="small"
+                                    style={{ margin: '2px' }}
+                                    />
+                                ))}
+                                </Box>
+                            </ListItem>
+                        )
+                    )}
                 </List>
 
                 <Box marginTop="2rem">
