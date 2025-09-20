@@ -67,6 +67,19 @@ interface SteamProfileProps {
 }
 
 const SteamProfile: React.FC<SteamProfileProps> = ({ darkMode, onBack }) => {
+  // On mount, fetch env vars from backend and skip input step if present
+  useEffect(() => {
+    fetch('/api/steam/env')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        if (data.steamId && data.apiKey) {
+          setSteamId(data.steamId);
+          setApiKey(data.apiKey);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [steamId, setSteamId] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -94,51 +107,40 @@ const SteamProfile: React.FC<SteamProfileProps> = ({ darkMode, onBack }) => {
     setError('');
 
     try {
-      // Simulate API calls for now - in real implementation, these would be actual Steam API calls
-      // For demo purposes, I'll create mock data
-      
-      // Mock player data
-      const mockPlayerData: PlayerSummary = {
-        steamid: steamId,
-        personaname: 'Demo Player',
-        profileurl: `https://steamcommunity.com/id/${steamId}`,
-        avatar: 'https://via.placeholder.com/32x32',
-        avatarmedium: 'https://via.placeholder.com/64x64',
-        avatarfull: 'https://via.placeholder.com/184x184'
-      };
-
-      // Mock games data
-      const mockGames: GameData[] = [
-        { appid: 730, name: 'Counter-Strike 2', playtime_forever: 1200, img_icon_url: '', genres: ['Action', 'FPS'] },
-        { appid: 570, name: 'Dota 2', playtime_forever: 800, img_icon_url: '', genres: ['Strategy', 'MOBA'] },
-        { appid: 440, name: 'Team Fortress 2', playtime_forever: 600, img_icon_url: '', genres: ['Action', 'FPS'] },
-        { appid: 271590, name: 'Grand Theft Auto V', playtime_forever: 400, img_icon_url: '', genres: ['Action', 'Adventure'] },
-        { appid: 292030, name: 'The Witcher 3', playtime_forever: 300, img_icon_url: '', genres: ['RPG', 'Adventure'] }
-      ];
-
-      setPlayerData(mockPlayerData);
-      setGames(mockGames);
-      
-      // Calculate genre statistics
-      const genreMap = new Map<string, { hours: number; gameCount: number }>();
-      
-      mockGames.forEach(game => {
-        if (game.genres) {
-          game.genres.forEach(genre => {
-            const current = genreMap.get(genre) || { hours: 0, gameCount: 0 };
-            genreMap.set(genre, {
-              hours: current.hours + Math.round(game.playtime_forever / 60),
-              gameCount: current.gameCount + 1
-            });
-          });
-        }
+      // Call backend to get Steam profile and games
+      const res = await fetch('/api/steam/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ steamId: steamId, apiKey: apiKey })
       });
+      const data = await res.json();
+      console.log('Steam profile API response:', data);
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+      const player = data.player;
+      const gamesList = data.games || [];
+      const games: GameData[] = gamesList.map((game: any) => ({
+        appid: game.appid,
+        name: game.name,
+        playtime_forever: game.playtime_forever,
+        img_icon_url: game.img_icon_url,
+        genres: [] // Optionally fetch genres from another API if needed
+      }));
 
-      const genreStatsArray: GenreStats[] = Array.from(genreMap.entries())
-        .map(([genre, stats]) => ({ genre, ...stats }))
-        .sort((a, b) => b.hours - a.hours);
-
-      setGenreStats(genreStatsArray);
+      setPlayerData({
+        steamid: player.steamid,
+        personaname: player.personaname,
+        profileurl: player.profileurl,
+        avatar: player.avatar,
+        avatarmedium: player.avatarmedium,
+        avatarfull: player.avatarfull
+      });
+      setGames(games);
+      setGenreStats([]);
       setStep(2);
 
     } catch (err) {
@@ -213,8 +215,9 @@ const SteamProfile: React.FC<SteamProfileProps> = ({ darkMode, onBack }) => {
         );
       }
 
-      setRecommendations(filteredRecommendations);
-      setStep(3);
+  console.log('Game recommendations:', filteredRecommendations);
+  setRecommendations(filteredRecommendations);
+  setStep(3);
 
     } catch (err) {
       setError('Failed to fetch game recommendations.');

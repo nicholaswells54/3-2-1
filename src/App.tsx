@@ -29,7 +29,7 @@ const App: React.FC = () => {
   const [selected, setSelected] = useState<string[]>([]);
   const [finalOption, setFinalOption] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(true);
   const [approvedCount, setApprovedCount] = useState<number>(0);
   const [approved, setApproved] = useState<string[]>([]); // Track approved cards
   const [rejected, setRejected] = useState<string[]>([]); // Track rejected cards
